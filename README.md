@@ -1,2 +1,3 @@
 # mpitest
-Simple openmpi test programs
+
+This repository contains a handful of simple openmpi test programs.
