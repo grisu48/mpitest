@@ -7,14 +7,14 @@ MPICC=mpicc
 O_FLAGS=-O3 -Wall -Werror -Wextra -pedantic
 # Debugging flags
 #O_FLAGS=-Og -g2 -Wall -Werror -Wextra -pedantic
-CC_FLAGS=$(O_FLAGS) -std=c99
+CC_FLAGS=$(O_FLAGS) -std=c99 -D_DEFAULT_SOURCE
 
 
 # Binaries, object files, libraries and stuff
 LIBS=
 INCLUDE=
 OBJS=
-BINS=test_mpi
+BINS=test_mpi mpi_latency
 
 
 # Default generic instructions
@@ -24,4 +24,7 @@ clean:
 	rm -f *.o
 
 test_mpi:	test_mpi.c
+	$(MPICC) $(CC_FLAGS) -o $@ $<
+
+mpi_latency:	mpi_latency.c
 	$(MPICC) $(CC_FLAGS) -o $@ $<

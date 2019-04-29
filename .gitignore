@@ -54,4 +54,6 @@ dkms.conf
 
 # Binaries
 test_mpi
+mpi_latency
 hellompi
+
