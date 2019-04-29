@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 #include <errno.h>
 #include <string.h>
 #include <strings.h>
@@ -39,6 +40,24 @@ static double sum_array(const double *arr, const size_t n) {
 		sum += arr[i];
 	return sum;
 }
+static double arr_max(const double *arr, const size_t n) {
+	if(n <= 0) return 0;
+	double ret = arr[0];
+	for(size_t i=0;i<n;i++)
+		ret = fmax(ret, arr[i]);
+	return ret;
+}
+static double arr_min(const double *arr, const size_t n) {
+	if(n <= 0) return 0;
+	double ret = arr[0];
+	for(size_t i=0;i<n;i++)
+		ret = fmin(ret, arr[i]);
+	return ret;
+}
+static double arr_avg(const double *arr, const size_t n) {
+	return sum_array(arr, n)/n;
+}
+
 
 static void cleanup() {
 	MPI_Finalize();
@@ -93,21 +112,18 @@ int main(int argc, char** argv) {
     int rank = 0;
     check_mpi_error(MPI_Comm_size(MPI_COMM_WORLD, &world_size), "MPI_Comm_size");
     check_mpi_error(MPI_Comm_rank(MPI_COMM_WORLD, &rank), "MPI_Comm_rank");
-    if( (world_size % 2) != 0) {
-    	if(rank == 0) 
-    		fprintf(stderr, "Error: Number of processes must be even\n");
-    	exit(EXIT_SUCCESS);
-    }
     
     if(verbose) printf("I am rank %d/%d\n", rank, world_size);
     MPI_Barrier(MPI_COMM_WORLD);
     
 	double *sb; // Send Buffer
 	double *rb; // Receive buffer
+	double *runtime;	// Runtimes
 
 	sb = (double*)malloc(buf_size * sizeof(double));
 	rb = (double*)malloc(buf_size * sizeof(double));
-	if(sb == NULL || rb == NULL) {
+	runtime = (double*)malloc(iterations * sizeof(double));
+	if(sb == NULL || rb == NULL || runtime == NULL) {
 		fprintf(stderr, "rank %d - failed to initialize buffers (out of memory)\n", rank);
 		exit(EXIT_FAILURE);
 	}
@@ -151,6 +167,7 @@ int main(int argc, char** argv) {
 	    	double millis = (tv_delta.tv_sec*1000.0) + (tv_delta.tv_usec/1000.0);;
 	    	printf("  Iteration %d: t = %.2f ms\n", i, millis);
 	    	runtime_ms += millis;
+	    	runtime[i] = millis;
 	    }
     }
 
@@ -158,6 +175,9 @@ int main(int argc, char** argv) {
     if(rank == 0) {
     	const long millis = (long)runtime_ms;
     	printf("Total runtime: %ld ms\n", millis);
+    	printf("  Worst      : %f ms\n", arr_max(runtime, iterations));
+    	printf("  Best       : %f ms\n", arr_min(runtime, iterations));
+    	printf("  Average    : %f ms\n", arr_avg(runtime, iterations));
     }
 
 

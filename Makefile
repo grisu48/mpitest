@@ -11,7 +11,7 @@ CC_FLAGS=$(O_FLAGS) -std=c99 -D_DEFAULT_SOURCE
 
 
 # Binaries, object files, libraries and stuff
-LIBS=
+LIBS=-lm
 INCLUDE=
 OBJS=
 BINS=test_mpi mpi_latency
@@ -24,7 +24,7 @@ clean:
 	rm -f *.o
 
 test_mpi:	test_mpi.c
-	$(MPICC) $(CC_FLAGS) -o $@ $<
+	$(MPICC) $(CC_FLAGS) -o $@ $< $(LIBS)
 
 mpi_latency:	mpi_latency.c
-	$(MPICC) $(CC_FLAGS) -o $@ $<
+	$(MPICC) $(CC_FLAGS) -o $@ $< $(LIBS)
