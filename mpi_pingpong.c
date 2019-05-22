@@ -90,19 +90,23 @@ int main(int argc, char** argv) {
     
     
 	if(rank == 0) printf("PingPong with %d ranks and %ld iterations\n", world_size, iterations);
-	if(rank == 0) printf("#   Size [B]    Runtime [us]\n");
+	if(rank == 0) printf("#   Size [B]    Runtime [us]   RTT[µs]\n");
 	time_t runtime = 0;
+	double best_rtt = -1.0;
 	for(int i=0;i<=14;i++) {
 		size_t base_size = (size_t)pow(2,i);
-		
 		for(int j=0;j<=5;j++) {
 			size_t size = base_size + j;
 			runtime = pingpong(size, iterations);
+			const double rtt = (double)runtime/(double)iterations;
+			best_rtt = best_rtt<0.0?rtt:fmin(best_rtt, rtt);
 			if(rank == 0) {
-				printf("%8ld    %8ld\n", size, runtime);
+				printf("%8ld    %8ld       %8.2f\n", size, runtime,rtt);
 			}
 		}
 	}
+	if(rank == 0)
+		printf("Best RTT: %8.2f µs\n", best_rtt);
 	
 	
 
